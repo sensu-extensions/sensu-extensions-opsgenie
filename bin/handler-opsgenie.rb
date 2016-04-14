@@ -71,7 +71,7 @@ module Sensu::Extension
                    close_alert(event)
                  end
 
-      msg_event = "#{event['action']} '#{event_id(event)}'"
+      msg_event = "#{event['action']} '#{event_alias(event)}'"
 
       # Failed connection such as timeout or bad DNS
       response.errback do
@@ -96,7 +96,7 @@ module Sensu::Extension
       end
     end
 
-    def event_id(event)
+    def event_alias(event)
       event['client']['name'] + '/' + event['check']['name']
     end
 
@@ -105,7 +105,7 @@ module Sensu::Extension
     end
 
     def close_alert(event)
-      post_to_opsgenie(:close, alias: event_id(event))
+      post_to_opsgenie(:close, alias: event_alias(event))
     end
 
     def event_tags(event)
@@ -127,7 +127,7 @@ module Sensu::Extension
       teams = @config['teams'] if @config['teams']
 
       post_to_opsgenie(action: :create,
-                       alias: event_id(event),
+                       alias: event_alias(event),
                        message: description,
                        tags: tags.join(','),
                        recipients: recipients,
