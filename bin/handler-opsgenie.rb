@@ -71,6 +71,8 @@ module Sensu::Extension
                      create_alert(event, description)
                    when 'resolve'
                      close_alert(event)
+                   else
+                     @logger.info("opsgenie: non-action event: #{event}")
                    end
 
         msg_event = "#{event['action']} '#{event_alias(event)}'"
