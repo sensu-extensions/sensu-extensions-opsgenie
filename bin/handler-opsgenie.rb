@@ -64,35 +64,42 @@ module Sensu::Extension
                                               event['check']['name'],
                                               event['check']['output'].chomp].join(' : ')
 
-      response = case event['action']
-                 when 'create'
-                   create_alert(event, description)
-                 when 'resolve'
-                   close_alert(event)
-                 end
+      if event['client']['name'].start_with? 'prod'
 
-      msg_event = "#{event['action']} '#{event_alias(event)}'"
+        response = case event['action']
+                   when 'create'
+                     create_alert(event, description)
+                   when 'resolve'
+                     close_alert(event)
+                   end
 
-      # Failed connection such as timeout or bad DNS
-      response.errback do
-        msg = "opsgenie: connection failure: #{msg_event}, error: #{response.error}"
-        @logger.error(msg)
-        yield msg, 2
-      end
+        msg_event = "#{event['action']} '#{event_alias(event)}'"
 
-      response.callback do |http|
-
-        if http.response_header.status == 200
-          msg = "opsgenie: request success: #{msg_event}"
-          @logger.debug(msg)
-          yield msg, 0
-        else
-          msg = "opsgenie: request failure: #{msg_event}, " +
-                "code: #{http.response_header.status}, response: #{http.response}"
+        # Failed connection such as timeout or bad DNS
+        response.errback do
+          msg = "opsgenie: connection failure: #{msg_event}, error: #{response.error}"
           @logger.error(msg)
           yield msg, 2
         end
 
+        response.callback do |http|
+
+          if http.response_header.status == 200
+            msg = "opsgenie: request success: #{msg_event}"
+            @logger.debug(msg)
+            yield msg, 0
+          else
+            msg = "opsgenie: request failure: #{msg_event}, " +
+                  "code: #{http.response_header.status}, response: #{http.response}"
+            @logger.error(msg)
+            yield msg, 2
+          end
+
+        end
+      else
+        msg = "opsgenie: avoided handling for host '#{event['client']['name']}' due to test code"
+        logger.info(msg)
+        yield msg, 0
       end
     end
 
