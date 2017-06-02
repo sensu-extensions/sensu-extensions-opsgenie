@@ -4,14 +4,14 @@ require 'json'
 module SensuPluginsOpsgenie
   # This defines the version of the gem
   module Version
-    MAJOR = 0
+    MAJOR = 1
     MINOR = 0
-    PATCH = 3
+    PATCH = 0
 
     VER_STRING = [MAJOR, MINOR, PATCH].compact.join('.')
 
-    NAME   = 'sensu-plugins-opsgenie'
-    BANNER = "#{NAME} v%s"
+    NAME   = 'sensu-plugins-opsgenie'.freeze
+    BANNER = "#{NAME} v%s".freeze
 
     module_function
 
